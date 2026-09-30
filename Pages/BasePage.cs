@@ -27,7 +27,7 @@ public abstract class BasePage
     /// <summary>
     /// Opens a page and waits until <paramref name="readyLocator"/> is visible.
     /// The public demo site sometimes returns an empty or half-loaded page when it is busy.
-    /// In that case we reload once and log a warning, so the slowness is still visible in the logs.
+    /// In that case we open it once more and log a warning, so the slowness is still visible in the logs.
     /// If the page is still broken after the reload, the test fails as normal.
     /// </summary>
     protected void OpenPath(string path, By readyLocator)
@@ -39,8 +39,10 @@ public abstract class BasePage
         }
         catch (WebDriverTimeoutException)
         {
-            Console.WriteLine($"Warning: {path} did not finish loading in {ConfigReader.TimeoutSeconds}s, reloading once.");
-            LoadIgnoringSlowResources(() => Driver.Navigate().Refresh(), path);
+            // Re-open the URL we want (not Refresh): if something else navigated the browser away,
+            // for example a late redirect, a refresh would just reload the wrong page.
+            Console.WriteLine($"Warning: {path} did not finish loading in {ConfigReader.TimeoutSeconds}s, opening it again. Current URL: {Driver.Url}");
+            LoadIgnoringSlowResources(() => OpenPath(path), path);
             WaitForVisible(readyLocator);
         }
     }

@@ -12,7 +12,12 @@ public class HeaderComponent : BasePage
 
     public HeaderComponent(IWebDriver driver) : base(driver) { }
 
-    public void OpenCart() => Click(_cartLink);
+    /// <summary>Clicks "Cart" and waits until the cart page is open.</summary>
+    public void OpenCart()
+    {
+        Click(_cartLink);
+        Wait.Until(d => d.Url.Contains("/view_cart"));
+    }
 
     public void Logout() => Click(_logoutLink);
 

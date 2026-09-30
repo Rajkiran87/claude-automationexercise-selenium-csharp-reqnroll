@@ -18,6 +18,9 @@ public class ProductsPage : BasePage
     {
         EnterText(_searchInput, searchTerm);
         Click(_searchButton);
+        // The search reloads /products with "?search=..." in the URL. Wait for it, so the next step
+        // does not read the old "All Products" page.
+        Wait.Until(d => d.Url.Contains("search=", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Title above the grid, e.g. "ALL PRODUCTS" or "SEARCHED PRODUCTS".</summary>
