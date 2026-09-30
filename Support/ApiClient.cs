@@ -60,6 +60,16 @@ public static class ApiClient
         return ReadResponseCode(body) == 200;
     }
 
+    /// <summary>Sends any request and parses the JSON body. Used by the @api scenarios.</summary>
+    public static async Task<JsonDocument> RequestAsync(HttpMethod method, string path, Dictionary<string, string>? form = null)
+    {
+        using var request = new HttpRequestMessage(method, ConfigReader.BaseUrl + path);
+        if (form is not null) request.Content = new FormUrlEncodedContent(form);
+
+        using var response = await Http.SendAsync(request);
+        return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+    }
+
     private static async Task<string> SendAsync(HttpMethod method, string path, Dictionary<string, string> form)
     {
         using var request = new HttpRequestMessage(method, ConfigReader.BaseUrl + path)

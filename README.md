@@ -2,7 +2,7 @@
 
 UI test automation framework for the practice e-commerce site **[automationexercise.com](https://automationexercise.com)**, written in **C# / .NET 8** with **Selenium WebDriver 4**, **Reqnroll** (the open-source successor of SpecFlow) and **NUnit**.
 
-It is one of four portfolio projects that automate **the same Gherkin scenarios** with different tool stacks:
+It is one of four portfolio projects that automate **the same Gherkin UI scenarios** with different tool stacks (this one also adds API tests):
 
 | Project | Stack |
 |---|---|
@@ -23,6 +23,7 @@ It is one of four portfolio projects that automate **the same Gherkin scenarios*
 | Shopping cart | add one product, add several (data table), set quantity on details page, remove product | `@cart` |
 | Checkout (end-to-end) | logged-in user pays and sees *Order Placed!* | `@checkout @e2e` |
 | Newsletter | valid subscription, invalid emails blocked (3 data rows) | `@subscription` |
+| Public API (no browser) | products and brands lists, unsupported methods (3 data rows), search, verify login, account details | `@api` |
 
 Each scenario also has `@smoke` or `@regression`. Negative tests carry `@negative`.
 
@@ -36,7 +37,7 @@ Each scenario also has `@smoke` or `@regression`. Negative tests carry `@negativ
 | Selenium 4 | Browser automation. **Selenium Manager** downloads the driver automatically |
 | Reqnroll | Runs Gherkin `.feature` files as NUnit tests (BDD) |
 | NUnit 4 | Test runner and `Assert.That` assertions |
-| GitHub Actions | Runs the suite on every push (headless Chrome) |
+| GitHub Actions | Runs the suite on every push and nightly, in Chrome, Firefox and Edge |
 
 ---
 
@@ -49,6 +50,7 @@ selenium-csharp-reqnroll
 ├── reqnroll.json                        # Reqnroll settings
 ├── Features/*.feature                   # the BDD scenarios
 ├── StepDefinitions/                     # Gherkin step  ->  C# method
+│   ├── ApiSteps.cs
 │   ├── NavigationSteps.cs
 │   ├── LoginSteps.cs
 │   ├── RegistrationSteps.cs
@@ -65,7 +67,8 @@ selenium-csharp-reqnroll
 ├── Support/
 │   ├── SharedContext.cs                 # data shared inside one scenario (driver, user)
 │   ├── ConfigReader.cs                  # reads appsettings.json (+ environment overrides)
-│   ├── ApiClient.cs                     # creates/deletes test users through the site's API
+│   ├── ApiClient.cs                     # calls the site's API (test users + @api scenarios)
+│   ├── ParallelConfig.cs                # runs feature files in parallel
 │   └── TestDataFactory.cs               # unique emails, test user, test card
 ├── Models/                              # User, PaymentCard records
 └── .github/workflows/tests.yml          # CI pipeline
@@ -97,6 +100,12 @@ dotnet test --filter "Category=smoke"
 
 # everything except the end-to-end checkout
 dotnet test --filter "Category!=e2e"
+
+# only the API scenarios (no browser, takes seconds)
+dotnet test --filter "Category=api"
+
+# fewer parallel workers (default is 4) if the site is slow
+dotnet test -- NUnit.NumberOfTestWorkers=2
 
 # with an HTML report in TestResults/
 dotnet test --logger "html;LogFileName=test-report.html"
@@ -133,11 +142,13 @@ $env:BROWSER="firefox"; $env:HEADLESS="true"; dotnet test
 | Unique email per run | Tests can run repeatedly and in any order |
 | Ads blocked at DNS level (Chrome/Edge) | Google ads sometimes cover buttons on this site |
 | `[Given]` + `[When]` on shared steps | In Reqnroll, `And` after `Given` is a *Given* step, so reusable steps accept both |
+| Feature files run in parallel | Safe because each scenario has its own browser and data; the suite finishes much faster |
+| `@api` scenarios skip the browser | API checks run in seconds and once in CI, not once per browser |
+| CI browser matrix + nightly run | Catches browser-specific bugs and changes on the live site |
 
 ## Known limitations / ideas for next steps
 
 * Automation Exercise is a shared public demo site. It can be slow, and ads can still appear in Firefox. Re-run before logging a defect.
-* Add parallel execution with `[assembly: Parallelizable(ParallelScope.Fixtures)]`.
 * Add Allure (`Allure.Reqnroll`) or ExtentReports for richer dashboards.
 
 ---

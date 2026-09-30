@@ -12,16 +12,16 @@
 
   <ItemGroup>
     <!-- Test runner -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-    <PackageReference Include="NUnit" Version="4.3.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.2.0" />
 
     <!-- Reqnroll = the open-source successor of SpecFlow. Turns .feature files into NUnit tests. -->
-    <PackageReference Include="Reqnroll.NUnit" Version="2.4.0" />
+    <PackageReference Include="Reqnroll.NUnit" Version="2.4.1" />
 
     <!-- Selenium. Selenium Manager downloads the browser driver automatically. -->
-    <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
-    <PackageReference Include="Selenium.Support" Version="4.34.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.49.0" />
+    <PackageReference Include="Selenium.Support" Version="4.49.0" />
   </ItemGroup>
 
   <ItemGroup>

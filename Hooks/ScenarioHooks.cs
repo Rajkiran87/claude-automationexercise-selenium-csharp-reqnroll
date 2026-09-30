@@ -23,6 +23,9 @@ public sealed class ScenarioHooks
     [BeforeScenario]
     public void StartBrowser()
     {
+        // API scenarios talk to the server directly and do not need a browser
+        if (_scenarioContext.ScenarioInfo.CombinedTags.Contains("api")) return;
+
         _context.Driver = DriverFactory.Create();
     }
 
@@ -54,7 +57,7 @@ public sealed class ScenarioHooks
 
         // Turn "Login with valid credentials" into a safe file name
         var safeName = string.Concat(_scenarioContext.ScenarioInfo.Title.Split(Path.GetInvalidFileNameChars()));
-        var path = Path.Combine(folder, $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+        var path = Path.Combine(folder, $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png");
 
         ((ITakesScreenshot)_context.Driver).GetScreenshot().SaveAsFile(path);
 
@@ -70,7 +73,10 @@ public sealed class ScenarioHooks
         var user = _context.User;
         try
         {
-            await ApiClient.DeleteAccountAsync(user.Email, user.Password);
+            if (!await ApiClient.DeleteAccountAsync(user.Email, user.Password))
+            {
+                Console.WriteLine($"Warning: the API did not delete test user {user.Email}");
+            }
         }
         catch (Exception e)
         {

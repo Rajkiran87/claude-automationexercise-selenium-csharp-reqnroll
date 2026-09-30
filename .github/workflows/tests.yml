@@ -1,16 +1,24 @@
-name: UI Tests
+name: Tests
 
 on:
   push:
     branches: [ main ]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'   # nightly at 02:00 UTC, catches changes on the live site
 
 jobs:
-  test:
+  ui-tests:
+    name: UI tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false        # one browser failing should not cancel the others
+      matrix:
+        browser: [ chrome, firefox, edge ]
     env:
       HEADLESS: 'true'
+      BROWSER: ${{ matrix.browser }}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,14 +27,36 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Run tests (headless Chrome)
-        run: dotnet test --logger "html;LogFileName=test-report.html" --logger "trx;LogFileName=test-results.trx"
+      # The API scenarios do not use a browser, so they run once in their own job below
+      - name: Run UI tests (headless ${{ matrix.browser }})
+        run: dotnet test --filter "Category!=api" --logger "html;LogFileName=test-report.html" --logger "trx;LogFileName=test-results.trx"
 
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-report
+          name: test-report-${{ matrix.browser }}
           path: |
             TestResults/
             bin/Debug/net8.0/Screenshots/
+
+  api-tests:
+    name: API tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run API tests
+        run: dotnet test --filter "Category=api" --logger "html;LogFileName=api-report.html"
+
+      - name: Upload API report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-report
+          path: TestResults/
