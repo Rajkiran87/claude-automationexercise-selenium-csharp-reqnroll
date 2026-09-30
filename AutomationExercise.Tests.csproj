@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- .NET 8 (LTS). Also builds on .NET 9/10 if you change this value. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>AutomationExercise.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Test runner -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+
+    <!-- Reqnroll = the open-source successor of SpecFlow. Turns .feature files into NUnit tests. -->
+    <PackageReference Include="Reqnroll.NUnit" Version="2.4.0" />
+
+    <!-- Selenium. Selenium Manager downloads the browser driver automatically. -->
+    <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
+    <PackageReference Include="Selenium.Support" Version="4.34.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy the settings file next to the compiled tests so ConfigReader can find it -->
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
