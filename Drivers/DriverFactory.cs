@@ -66,15 +66,21 @@ public static class DriverFactory
     private static bool RunningInCi =>
         string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// How long Selenium waits for the browser to answer a command, including starting up.
+    /// The default is 60 seconds; a busy CI machine starting several browsers at once can need more.
+    /// </summary>
+    private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(120);
+
     public static IWebDriver Create()
     {
         var headless = ConfigReader.Headless;
 
         IWebDriver driver = ConfigReader.Browser switch
         {
-            "chrome" => new ChromeDriver(BuildChromeOptions(headless)),
-            "edge" => new EdgeDriver(BuildEdgeOptions(headless)),
-            "firefox" => new FirefoxDriver(BuildFirefoxOptions(headless)),
+            "chrome" => new ChromeDriver(ChromeDriverService.CreateDefaultService(), BuildChromeOptions(headless), CommandTimeout),
+            "edge" => new EdgeDriver(EdgeDriverService.CreateDefaultService(), BuildEdgeOptions(headless), CommandTimeout),
+            "firefox" => new FirefoxDriver(FirefoxDriverService.CreateDefaultService(), BuildFirefoxOptions(headless), CommandTimeout),
             var other => throw new ArgumentException($"Unsupported browser '{other}'. Use chrome, firefox or edge.")
         };
 

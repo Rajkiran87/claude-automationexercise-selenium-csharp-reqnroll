@@ -24,6 +24,27 @@ public abstract class BasePage
     /// <summary>Opens a page of the site, e.g. OpenPath("/login").</summary>
     protected void OpenPath(string path) => Driver.Navigate().GoToUrl(ConfigReader.BaseUrl + path);
 
+    /// <summary>
+    /// Opens a page and waits until <paramref name="readyLocator"/> is visible.
+    /// The public demo site sometimes returns an empty or half-loaded page when it is busy.
+    /// In that case we reload once and log a warning, so the slowness is still visible in the logs.
+    /// If the page is still broken after the reload, the test fails as normal.
+    /// </summary>
+    protected void OpenPath(string path, By readyLocator)
+    {
+        OpenPath(path);
+        try
+        {
+            WaitForVisible(readyLocator);
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine($"Warning: {path} did not finish loading in {ConfigReader.TimeoutSeconds}s, reloading once.");
+            Driver.Navigate().Refresh();
+            WaitForVisible(readyLocator);
+        }
+    }
+
     protected IWebElement WaitForVisible(By locator) =>
         Wait.Until(d =>
         {

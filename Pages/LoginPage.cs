@@ -22,7 +22,7 @@ public class LoginPage : BasePage
 
     public LoginPage(IWebDriver driver) : base(driver) { }
 
-    public void Open() => OpenPath("/login");
+    public void Open() => OpenPath("/login", _loginEmail);
 
     public bool IsLoginFormDisplayed() => WaitForVisible(_loginEmail).Displayed;
 
