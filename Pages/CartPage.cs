@@ -11,7 +11,19 @@ public class CartPage : BasePage
 
     public void Open() => OpenPath("/view_cart");
 
-    public bool ContainsProduct(string productName) => IsDisplayed(By.XPath(RowXpath(productName)));
+    /// <summary>True when the product's row appears within the normal timeout.</summary>
+    public bool ContainsProduct(string productName)
+    {
+        try
+        {
+            WaitForVisible(By.XPath(RowXpath(productName)));
+            return true;
+        }
+        catch (WebDriverTimeoutException)
+        {
+            return false;
+        }
+    }
 
     /// <summary>Reads the number in the Quantity column for this product.</summary>
     public int GetQuantity(string productName) =>

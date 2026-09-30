@@ -28,8 +28,14 @@ public class LoginSteps
     // This step is used both ways in the features, so it has both attributes.
     [Given("I log in with the registered user's credentials")]
     [When("I log in with the registered user's credentials")]
-    public void WhenILogInWithTheRegisteredUsersCredentials() =>
+    public void WhenILogInWithTheRegisteredUsersCredentials()
+    {
         LoginPage.Login(_context.User.Email, _context.User.Password);
+
+        // Wait for the login to finish before the next step. Otherwise the site's redirect after
+        // login can arrive late and replace the next page we open (e.g. /products -> home page).
+        Header.GetLoggedInUsername();
+    }
 
     [When("I log in with the registered user's email and a wrong password")]
     public void WhenILogInWithTheRegisteredUsersEmailAndAWrongPassword() =>
