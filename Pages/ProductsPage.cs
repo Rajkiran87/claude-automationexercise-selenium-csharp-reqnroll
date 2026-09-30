@@ -12,7 +12,7 @@ public class ProductsPage : BasePage
 
     public ProductsPage(IWebDriver driver) : base(driver) { }
 
-    public void Open() => OpenPath("/products");
+    public void Open() => OpenPath("/products", _searchInput);
 
     public void Search(string searchTerm)
     {

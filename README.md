@@ -140,7 +140,11 @@ $env:BROWSER="firefox"; $env:HEADLESS="true"; dotnet test
 | Context injection (`SharedContext`) | Step classes share state without static fields |
 | Test users created and deleted through the **API** | Fast, independent scenarios with no leftover data |
 | Unique email per run | Tests can run repeatedly and in any order |
-| Ads blocked at DNS level (Chrome/Edge) | Google ads sometimes cover buttons on this site |
+| Ads blocked at DNS level (all three browsers) | Google ads sometimes cover buttons or replace the page on this site |
+| No browser sandbox in CI only (`CI=true`) | Linux CI runners block the sandbox, which makes Edge crash on start |
+| Page opens wait for a key element and reload once | The shared demo site sometimes returns a half-loaded page when busy; a warning is logged when this happens |
+| 2 parallel scenarios per CI job (4 locally), 120 s browser start timeout | Three browser jobs run at once in CI, so fewer simultaneous browsers keeps the runner and the site responsive |
+| "Eager" page loads with a 60 s cap | Tests continue once the HTML is ready instead of waiting for slow ad or tracking scripts, which could freeze Edge |
 | `[Given]` + `[When]` on shared steps | In Reqnroll, `And` after `Given` is a *Given* step, so reusable steps accept both |
 | Feature files run in parallel | Safe because each scenario has its own browser and data; the suite finishes much faster |
 | `@api` scenarios skip the browser | API checks run in seconds and once in CI, not once per browser |
@@ -148,7 +152,7 @@ $env:BROWSER="firefox"; $env:HEADLESS="true"; dotnet test
 
 ## Known limitations / ideas for next steps
 
-* Automation Exercise is a shared public demo site. It can be slow, and ads can still appear in Firefox. Re-run before logging a defect.
+* Automation Exercise is a shared public demo site. It can be slow. New ad domains can appear; add them to `DriverFactory` if a click is blocked. Re-run before logging a defect.
 * Add Allure (`Allure.Reqnroll`) or ExtentReports for richer dashboards.
 
 ---

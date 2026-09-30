@@ -24,6 +24,43 @@ public abstract class BasePage
     /// <summary>Opens a page of the site, e.g. OpenPath("/login").</summary>
     protected void OpenPath(string path) => Driver.Navigate().GoToUrl(ConfigReader.BaseUrl + path);
 
+    /// <summary>
+    /// Opens a page and waits until <paramref name="readyLocator"/> is visible.
+    /// The public demo site sometimes returns an empty or half-loaded page when it is busy.
+    /// In that case we reload once and log a warning, so the slowness is still visible in the logs.
+    /// If the page is still broken after the reload, the test fails as normal.
+    /// </summary>
+    protected void OpenPath(string path, By readyLocator)
+    {
+        LoadIgnoringSlowResources(() => OpenPath(path), path);
+        try
+        {
+            WaitForVisible(readyLocator);
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine($"Warning: {path} did not finish loading in {ConfigReader.TimeoutSeconds}s, reloading once.");
+            LoadIgnoringSlowResources(() => Driver.Navigate().Refresh(), path);
+            WaitForVisible(readyLocator);
+        }
+    }
+
+    /// <summary>
+    /// Runs a navigation. If the browser's page-load timeout expires (usually a slow third-party
+    /// script), we log it and carry on: the caller then checks whether the page is usable.
+    /// </summary>
+    private static void LoadIgnoringSlowResources(Action navigate, string path)
+    {
+        try
+        {
+            navigate();
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine($"Warning: {path} hit the page-load timeout; checking whether it is usable anyway.");
+        }
+    }
+
     protected IWebElement WaitForVisible(By locator) =>
         Wait.Until(d =>
         {

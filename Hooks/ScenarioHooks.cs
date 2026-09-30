@@ -36,7 +36,15 @@ public sealed class ScenarioHooks
         {
             if (_scenarioContext.TestError is not null && _context.HasDriver)
             {
-                SaveScreenshot();
+                try
+                {
+                    SaveScreenshot();
+                }
+                catch (Exception e)
+                {
+                    // A frozen browser cannot take a screenshot; keep the original test error visible
+                    Console.WriteLine($"Warning: could not save a screenshot: {e.Message}");
+                }
             }
         }
         finally
