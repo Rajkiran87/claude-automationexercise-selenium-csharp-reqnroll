@@ -144,6 +144,7 @@ $env:BROWSER="firefox"; $env:HEADLESS="true"; dotnet test
 | No browser sandbox in CI only (`CI=true`) | Linux CI runners block the sandbox, which makes Edge crash on start |
 | Page opens wait for a key element and reload once | The shared demo site sometimes returns a half-loaded page when busy; a warning is logged when this happens |
 | 2 parallel scenarios per CI job (4 locally), 120 s browser start timeout | Three browser jobs run at once in CI, so fewer simultaneous browsers keeps the runner and the site responsive |
+| "Eager" page loads with a 60 s cap | Tests continue once the HTML is ready instead of waiting for slow ad or tracking scripts, which could freeze Edge |
 | `[Given]` + `[When]` on shared steps | In Reqnroll, `And` after `Given` is a *Given* step, so reusable steps accept both |
 | Feature files run in parallel | Safe because each scenario has its own browser and data; the suite finishes much faster |
 | `@api` scenarios skip the browser | API checks run in seconds and once in CI, not once per browser |

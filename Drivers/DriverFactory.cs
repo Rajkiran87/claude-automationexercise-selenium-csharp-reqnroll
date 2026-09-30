@@ -72,6 +72,12 @@ public static class DriverFactory
     /// </summary>
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(120);
 
+    /// <summary>
+    /// Maximum time for one page load. It must be shorter than CommandTimeout, so a slow page
+    /// ends with a normal timeout (handled in BasePage.OpenPath) instead of hanging the browser.
+    /// </summary>
+    private static readonly TimeSpan PageLoadTimeout = TimeSpan.FromSeconds(60);
+
     public static IWebDriver Create()
     {
         var headless = ConfigReader.Headless;
@@ -84,6 +90,8 @@ public static class DriverFactory
             var other => throw new ArgumentException($"Unsupported browser '{other}'. Use chrome, firefox or edge.")
         };
 
+        driver.Manage().Timeouts().PageLoad = PageLoadTimeout;
+
         if (!headless)
         {
             driver.Manage().Window.Maximize();
@@ -92,9 +100,11 @@ public static class DriverFactory
         return driver;
     }
 
+    // PageLoadStrategy.Eager: continue as soon as the HTML is ready instead of waiting for every
+    // ad, font and tracking script. Page objects already wait for the elements they need.
     private static ChromeOptions BuildChromeOptions(bool headless)
     {
-        var options = new ChromeOptions();
+        var options = new ChromeOptions { PageLoadStrategy = PageLoadStrategy.Eager };
         options.AddArguments(CommonChromiumArgs);
         if (RunningInCi) options.AddArguments(CiChromiumArgs);
         if (headless) options.AddArgument("--headless=new");
@@ -103,7 +113,7 @@ public static class DriverFactory
 
     private static EdgeOptions BuildEdgeOptions(bool headless)
     {
-        var options = new EdgeOptions();
+        var options = new EdgeOptions { PageLoadStrategy = PageLoadStrategy.Eager };
         options.AddArguments(CommonChromiumArgs);
         if (RunningInCi) options.AddArguments(CiChromiumArgs);
         if (headless) options.AddArgument("--headless=new");
@@ -112,7 +122,7 @@ public static class DriverFactory
 
     private static FirefoxOptions BuildFirefoxOptions(bool headless)
     {
-        var options = new FirefoxOptions();
+        var options = new FirefoxOptions { PageLoadStrategy = PageLoadStrategy.Eager };
         options.AddArguments("--width=1920", "--height=1080");
         options.SetPreference("network.dns.localDomains", string.Join(",", FirefoxAdHosts));
         if (headless) options.AddArgument("-headless");

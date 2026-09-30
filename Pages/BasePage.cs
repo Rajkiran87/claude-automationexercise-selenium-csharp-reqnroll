@@ -32,7 +32,7 @@ public abstract class BasePage
     /// </summary>
     protected void OpenPath(string path, By readyLocator)
     {
-        OpenPath(path);
+        LoadIgnoringSlowResources(() => OpenPath(path), path);
         try
         {
             WaitForVisible(readyLocator);
@@ -40,8 +40,24 @@ public abstract class BasePage
         catch (WebDriverTimeoutException)
         {
             Console.WriteLine($"Warning: {path} did not finish loading in {ConfigReader.TimeoutSeconds}s, reloading once.");
-            Driver.Navigate().Refresh();
+            LoadIgnoringSlowResources(() => Driver.Navigate().Refresh(), path);
             WaitForVisible(readyLocator);
+        }
+    }
+
+    /// <summary>
+    /// Runs a navigation. If the browser's page-load timeout expires (usually a slow third-party
+    /// script), we log it and carry on: the caller then checks whether the page is usable.
+    /// </summary>
+    private static void LoadIgnoringSlowResources(Action navigate, string path)
+    {
+        try
+        {
+            navigate();
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine($"Warning: {path} hit the page-load timeout; checking whether it is usable anyway.");
         }
     }
 
